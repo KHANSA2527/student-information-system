@@ -3,6 +3,7 @@ import { OTP } from '../models/otp.model.js';
 import {User} from '../models/user.model.js'
 import { generateOtp } from '../utils/generate-otp.js';
 import { sendEmail } from '../utils/sendEmail.js';
+import { signToken } from '../utils/signToken.js';
 import { signUpSchema } from '../validator/auth-validator.js';
 import bcrypt  from 'bcryptjs'
 
@@ -111,5 +112,31 @@ const resendOtp  = async (req, res) => {
     
 }
 
+const  login = async (req,res) =>{
+    try {
+         const {email , password} = req.body;
+         if(!email || !password){
+            return res.status(400).json({success: false, massage: 'Email and Password required'})
+         }
+         const existingUser = await User.findOne({email})
+         if(!existingUser){
+            return res.status(400).json({success:false ,massage:"User not found"})
+         }
+         if(existingUser.is_active == false){
+            return res.status(400).json({success :false ,massage:  "complete  your verification "})
+         }
+         const hashPassword = await bcrypt.compare(password, existingUser.password)
+         if(!hashPassword){
+            return res.status(400).json({success:false ,massage:'Incorrect password'})
+         }
+         const token = await signToken(existingUser._id);
+         return res.status(200).json({success: true , massage: 'Login successfully',token})
 
-export {userSignUp, verifyOtp , resendOtp}
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ success : false , massage: "Internal server error"})
+    }
+}
+
+
+export {userSignUp, verifyOtp , resendOtp , login}
