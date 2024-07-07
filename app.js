@@ -3,6 +3,7 @@ import express from 'express'
 import mongoose from 'mongoose';
 import dotenv from 'dotenv'
 import {router as authRouter} from './routes/auth.routes.js'
+import {router as userRouter} from './routes/user.routes.js'
 
 dotenv.config();
 
@@ -12,6 +13,7 @@ const api = process.env.API_URL;
 
 app.use(express.json());
 app.use(`${api}/auth`, authRouter)
+app.use(`${api}/`, userRouter)
 
 mongoose.set("strictQuery", false);
 mongoose
